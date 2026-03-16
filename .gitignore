@@ -1,0 +1,12 @@
+# Windows 
+Thumbs.db
+desktop.ini
+
+
+# Python 
+*.pyc
+.env
+venv/
+
+# VS Code
+.vscode
