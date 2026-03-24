@@ -1,38 +1,36 @@
-&#x20;Salon Booking System
+\# Salon Booking System - Dokumentimi i Projektit
 
 
 
-&#x20;Përshkrimi
-
-Aplikacion web për rezervimin e termineve në sallon bukurie.
-
-Klientët mund të rezervojnë, shikojnë dhe anulojnë terminet e tyre.
+Ky projekt është një sistem për menaxhimin e rezervimeve në sallone bukurie, i ndërtuar në C# me fokus në arkitekturën e shtresëzuar dhe përdorimin e Repository Pattern për ruajtjen e të dhënave.
 
 
 
-&#x20;Funksionalitetet
+\## 📁 Organizimi i Kodit (Struktura e Projektit)
 
-\- Login i përdoruesit dhe adminit
-
-\- Rezervimi i termineve
-
-\- Parandalimi i konfliktit të orarit
-
-\- Menaxhimi i termineve nga admini
+Sipas kërkesave të detyrës, projekti është ndarë në katër shtresa kryesore:
 
 
 
-&#x20;Teknologjitë
+1\. \*\*Shtresa Data\*\*: Përmban interface-in `IRepository.cs` dhe implementimin konkret `FileRepository.cs`. Kjo shtresë mundëson operacionet CRUD dhe ruajtjen e të dhënave në skedarë CSV.
 
-\- HTML / CSS / JavaScript (Frontend)
+2\. \*\*Shtresa Models\*\*: Këtu ndodhet klasa `Appointment.cs`, e cila shërben si modeli bazë i të dhënave që qarkullon nëpër sistem.
 
-\- Python (Backend)
+3\. \*\*Shtresa Services\*\*: Përmban `AppointmentService.cs`, ku është izoluar logjika e biznesit (p.sh. validimet), duke mos e ngarkuar kodin e UI.
 
-\- MySQL (Database)
+4\. \*\*Shtresa UI\*\*: Përmban `ConsoleUI.cs`, e cila menaxhon të gjithë ndërveprimin me përdoruesin në terminal.
 
 
 
-Autore
+\## 🛠️ Repository Pattern \& Arkitektura
 
-Edonisa Osmani
+\- \*\*Program.cs\*\*: Është mbajtur minimal (max 10 rreshta), duke shërbyer vetëm si pikë nisjeje për aplikacionin.
+
+\- \*\*Abstraksioni\*\*: Përdorimi i `IRepository` mundëson që logjika e aplikacionit të jetë e pavarur nga mënyra se si ruhen të dhënat (CSV, Database, etj.).
+
+
+
+\## 🚀 Ekzekutimi
+
+Aplikacioni niset nga `Program.cs`, i cili inicializon shërbimet dhe thërret metodat e `ConsoleUI` për të filluar menaxhimin e takimeve.
 
