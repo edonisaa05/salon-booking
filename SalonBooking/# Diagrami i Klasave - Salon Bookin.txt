@@ -1,0 +1,31 @@
+# Diagrami i Klasave - Salon Booking
+
+```mermaid
+classDiagram
+    class Appointment {
+        +int Id
+        +string ClientName
+        +DateTime Date
+        +string ServiceType
+    }
+    class IRepository {
+        <<interface>>
+        +GetAll()
+        +GetById(id)
+        +Add(entity)
+        +Save()
+    }
+    class FileRepository {
+        -string filePath
+        +GetAll()
+        +Save()
+    }
+    class AppointmentService {
+        -IRepository repo
+        +CreateAppointment()
+        +ViewAll()
+    }
+
+    FileRepository ..|> IRepository
+    AppointmentService --> IRepository
+    AppointmentService --> Appointment
