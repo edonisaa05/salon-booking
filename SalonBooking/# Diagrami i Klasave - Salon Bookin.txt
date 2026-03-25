@@ -29,3 +29,12 @@ classDiagram
     FileRepository ..|> IRepository
     AppointmentService --> IRepository
     AppointmentService --> Appointment
+
+
+---
+## 🌟 Bonusi: Aplikimi i Parimeve SOLID
+
+Në këtë projekt janë aplikuar parimet kryesore të SOLID për të garantuar një kod cilësor:
+
+1. **Single Responsibility Principle (SRP)**: Secila klasë ka një përgjegjësi të vetme. Për shembull, `AppointmentService` merret vetëm me logjikën e takimeve, ndërsa `FileRepository` merret vetëm me menaxhimin e skedarit.
+2. **Dependency Inversion Principle (DIP)**: Klasat e nivelit të lartë nuk varen nga implementimet konkrete (si CSV), por nga abstraksionet (`IRepository`). Kjo e bën sistemin shumë fleksibël për ndryshime në të ardhmen.
