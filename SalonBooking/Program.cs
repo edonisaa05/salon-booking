@@ -2,7 +2,19 @@
 using SalonBooking.Services;
 using SalonBooking.UI;
 
-var repository = new FileRepository();
-var service = new AppointmentService(repository);
-var ui = new ConsoleUI(service);
-ui.Run();
+namespace SalonBooking
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            // Krijohen shtresat sipas arkitekturës
+            FileRepository repo = new FileRepository();
+            AppointmentService service = new AppointmentService(repo);
+            ConsoleUI ui = new ConsoleUI(service);
+
+            // Nis programin
+            ui.ShfaqMenu();
+        }
+    }
+}
