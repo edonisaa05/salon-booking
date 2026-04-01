@@ -55,6 +55,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="docs\implementation.md" />
+    <None Include="docs\sprint-plan.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="docs\output.png" />
