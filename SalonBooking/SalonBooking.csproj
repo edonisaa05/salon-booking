@@ -46,19 +46,25 @@
   <ItemGroup>
     <Compile Include="Data\FileRepository.cs" />
     <Compile Include="Data\IRepository.cs" />
-    <Compile Include="Models\Appointment.cs" />
+    <Compile Include="Interfaces\IBookingRepository.cs" />
+    <Compile Include="Models\Booking.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AppointmentService.cs" />
+    <Compile Include="Services\ValidationService.cs" />
     <Compile Include="UI\ConsoleUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="docs\architecture.md" />
     <None Include="docs\implementation.md" />
+    <None Include="docs\improvement-report.md" />
+    <None Include="docs\project-audit.md" />
     <None Include="docs\sprint-plan.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="docs\output.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

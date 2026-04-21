@@ -61,5 +61,23 @@ namespace SalonBooking.Services
         {
             _repository.Delete(id);
         }
+
+        public List<Appointment> SearchByName(string name)
+        {
+            // Marrim të gjitha takimet nga repo dhe i filtrojmë sipas emrit
+            return _repository.GetAll()
+                .Where(a => a.ClientName.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
+        }
+
+        internal void CreateBooking(Booking rezervimiIRi)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal IEnumerable<object> GetHistory()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

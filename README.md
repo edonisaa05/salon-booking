@@ -1,36 +1,17 @@
-\# Salon Booking System - Dokumentimi i Projektit
+﻿# SalonBooking - Sistemi i Rezervimeve
 
+Ky është një aplikacion në C# për menaxhimin e rezervimeve në një sallon, i ndërtuar me arkitekturë me shtresa (Layered Architecture).
 
+## 🚀 Përmirësimet e Realizuara
+1. **Dependency Injection**: Lidhja midis shtresave bëhet përmes Interface-ve për të rritur testueshmërinë.
+2. **Reliability & Error Handling**: Përdorimi i try-catch dhe validimit të të dhënave për të parandaluar mbylljen e papritur të programit.
+3. **Unit Testing**: Projekti përfshin teste automatike për të verifikuar logjikën e biznesit.
 
-Ky projekt është një sistem për menaxhimin e rezervimeve në sallone bukurie, i ndërtuar në C# me fokus në arkitekturën e shtresëzuar dhe përdorimin e Repository Pattern për ruajtjen e të dhënave.
+## 🛠 Si të ekzekutohet
+1. Hapni skedarin `SalonBooking.sln` në Visual Studio.
+2. Sigurohuni që projekti `SalonBooking` është vendosur si "Startup Project".
+3. Shtypni `F5` për të nisur programin.
 
-
-
-\## 📁 Organizimi i Kodit (Struktura e Projektit)
-
-Sipas kërkesave të detyrës, projekti është ndarë në katër shtresa kryesore:
-
-
-
-1\. \*\*Shtresa Data\*\*: Përmban interface-in `IRepository.cs` dhe implementimin konkret `FileRepository.cs`. Kjo shtresë mundëson operacionet CRUD dhe ruajtjen e të dhënave në skedarë CSV.
-
-2\. \*\*Shtresa Models\*\*: Këtu ndodhet klasa `Appointment.cs`, e cila shërben si modeli bazë i të dhënave që qarkullon nëpër sistem.
-
-3\. \*\*Shtresa Services\*\*: Përmban `AppointmentService.cs`, ku është izoluar logjika e biznesit (p.sh. validimet), duke mos e ngarkuar kodin e UI.
-
-4\. \*\*Shtresa UI\*\*: Përmban `ConsoleUI.cs`, e cila menaxhon të gjithë ndërveprimin me përdoruesin në terminal.
-
-
-
-\## 🛠️ Repository Pattern \& Arkitektura
-
-\- \*\*Program.cs\*\*: Është mbajtur minimal (max 10 rreshta), duke shërbyer vetëm si pikë nisjeje për aplikacionin.
-
-\- \*\*Abstraksioni\*\*: Përdorimi i `IRepository` mundëson që logjika e aplikacionit të jetë e pavarur nga mënyra se si ruhen të dhënat (CSV, Database, etj.).
-
-
-
-\## 🚀 Ekzekutimi
-
-Aplikacioni niset nga `Program.cs`, i cili inicializon shërbimet dhe thërret metodat e `ConsoleUI` për të filluar menaxhimin e takimeve.
-
+## 🧪 Ekzekutimi i Testeve
+1. Shkoni te menuja: **Test > Run All Tests**.
+2. Rezultatet do të shfaqen në dritaren "Test Explorer".

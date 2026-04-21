@@ -1,76 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq; // Kjo është shumë e rëndësishme për Max()
+using System.Linq;
 using SalonBooking.Models;
+using SalonBooking.Interfaces;
 
 namespace SalonBooking.Data
 {
-    public class FileRepository : IRepository<Appointment>
+    // Kjo klasë tashmë implementon saktë ndërfaqen
+    public class FileRepository : IBookingRepository
     {
-        private string _filePath = "Data/appointments.csv";
-        private List<Appointment> _appointments = new List<Appointment>();
+        private string filePath = "rezervimet.csv";
 
-        public FileRepository()
+        public void Save(Booking booking)
         {
-            // Krijo folderin Data nëse nuk ekziston që të mos dështojë programi
-            if (!Directory.Exists("Data")) Directory.CreateDirectory("Data");
-            Load();
+            // Sigurohemi që ID të gjenerohet nëse mungon
+            var rezervimet = GetAll();
+            booking.Id = rezervimet.Count > 0 ? rezervimet.Max(x => x.Id) + 1 : 1;
+
+            string linja = $"{booking.Id},{booking.CustomerName},{booking.ServiceName},{booking.AppointmentDate:yyyy-MM-dd}";
+            File.AppendAllLines(filePath, new[] { linja });
         }
 
-        private void Load()
+        public List<Booking> GetAll()
         {
-            if (!File.Exists(_filePath)) return;
+            var lista = new List<Booking>();
 
-            var lines = File.ReadAllLines(_filePath);
-            _appointments.Clear();
-            foreach (var line in lines)
+            if (!File.Exists(filePath)) return lista;
+
+            var rreshtat = File.ReadAllLines(filePath);
+            foreach (var rresht in rreshtat)
             {
-                var parts = line.Split(',');
-                if (parts.Length >= 5)
+                var teDhenat = rresht.Split(',');
+                if (teDhenat.Length == 4)
                 {
-                    _appointments.Add(new Appointment(
-                        int.Parse(parts[0]), parts[1], parts[2], parts[3], parts[4]
-                    ));
+                    lista.Add(new Booking
+                    {
+                        Id = int.Parse(teDhenat[0]),
+                        CustomerName = teDhenat[1],
+                        ServiceName = teDhenat[2],
+                        AppointmentDate = DateTime.Parse(teDhenat[3])
+                    });
                 }
             }
+            return lista;
         }
 
-        public List<Appointment> GetAll() => _appointments;
-
-        public Appointment GetById(int id) => _appointments.Find(a => a.Id == id);
-
-        public void Add(Appointment item)
-        {
-            // Logjika për auto-increment ID
-            item.Id = _appointments.Any() ? _appointments.Max(a => a.Id) + 1 : 1;
-            _appointments.Add(item);
-            Save();
-        }
-
-        public void Delete(int id)
-        {
-            _appointments.RemoveAll(a => a.Id == id);
-            Save();
-        }
-
-        public void Update(Appointment updatedItem)
-        {
-            var index = _appointments.FindIndex(a => a.Id == updatedItem.Id);
-            if (index != -1)
-            {
-                _appointments[index] = updatedItem;
-                Save();
-            }
-        }
-
-        public void Save()
-        {
-            var lines = new List<string>();
-            foreach (var a in _appointments)
-                lines.Add($"{a.Id},{a.ClientName},{a.Service},{a.Date},{a.Time}");
-
-            File.WriteAllLines(_filePath, lines);
-        }
+        // Shtojmë metodat e tjera që mund t'i kërkojë ndërfaqja IBookingRepository
+        public void Delete(int id) { /* Logjika fakultative */ }
+        public Booking GetById(int id) => GetAll().FirstOrDefault(x => x.Id == id);
     }
 }

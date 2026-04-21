@@ -1,146 +1,129 @@
 ﻿using System;
-using SalonBooking.Models;
+using System.Collections.Generic;
 using SalonBooking.Services;
+using SalonBooking.Models;
+using System.Linq;
 
 namespace SalonBooking.UI
 {
     public class ConsoleUI
     {
-        private readonly AppointmentService _service;
+        private readonly AppointmentService _appointmentService;
 
-        public ConsoleUI(AppointmentService service)
+        public ConsoleUI(AppointmentService appointmentService)
         {
-            _service = service;
+            _appointmentService = appointmentService;
         }
 
         public void ShfaqMenu()
         {
-            while (true)
+            bool vazhdo = true;
+            while (vazhdo)
             {
-                Console.WriteLine("\n===============================");
-                Console.WriteLine("   SALON BOOKING SYSTEM");
-                Console.WriteLine("===============================");
-                Console.WriteLine("1. List All Appointments");
-                Console.WriteLine("2. Create New Appointment");
-                Console.WriteLine("3. Search Appointment by ID");
-                Console.WriteLine("4. Update Appointment");
-                Console.WriteLine("5. Delete Appointment");
-                Console.WriteLine("6. Exit");
-                Console.Write("\nSelect an option: ");
+                Console.WriteLine("\n--- SISTEMI I REZERVIMEVE ---");
+                Console.WriteLine("1. Shto Rezervim");
+                Console.WriteLine("2. Shfaq Historikun");
+                Console.WriteLine("3. Dil");
+                Console.Write("Zgjidhni një opsion: ");
 
-                string choice = Console.ReadLine();
+                string zgjedhja = Console.ReadLine();
 
-                switch (choice)
+                switch (zgjedhja)
                 {
                     case "1":
-                        ListAll();
+                        ShtoRezervimInteraktiv();
                         break;
                     case "2":
-                        CreateNew();
+                        ShfaqRezervimet();
                         break;
                     case "3":
-                        SearchById();
+                        vazhdo = false;
                         break;
-                    case "4":
-                        UpdateExisting();
-                        break;
-                    case "5":
-                        Delete();
-                        break;
-                    case "6":
-                        return;
                     default:
-                        Console.WriteLine("Invalid option. Please try again.");
+                        Console.WriteLine("Zgjedhje e gabuar! Provoni përsëri.");
                         break;
                 }
             }
         }
 
-        private void ListAll()
+        private void ShtoRezervimInteraktiv()
         {
-            Console.WriteLine("\n--- Appointment List ---");
-            var appointments = _service.GetAppointments();
-            if (appointments.Count == 0)
-            {
-                Console.WriteLine("No appointments found.");
-                return;
-            }
-
-            foreach (var app in appointments)
-            {
-                Console.WriteLine($"ID: {app.Id} | Client: {app.ClientName} | Service: {app.Service} | Date: {app.Date} {app.Time}");
-            }
-        }
-
-        private void CreateNew()
-        {
+            // FILLIMI I TRY-CATCH (Përmirësimi në Reliability)
             try
             {
-                Console.WriteLine("\n--- Create Appointment ---");
-                Console.Write("Client Name: "); string name = Console.ReadLine();
-                Console.Write("Service Type: "); string serviceType = Console.ReadLine();
-                Console.Write("Date (dd/mm/yyyy): "); string date = Console.ReadLine();
-                Console.Write("Time (hh:mm): "); string time = Console.ReadLine();
+                Console.WriteLine("\n--- REGJISTRIMI I REZERVIMIT TË RI ---");
 
-                var newApp = new Appointment(0, name, serviceType, date, time);
-                _service.CreateAppointment(newApp);
-                Console.WriteLine("Success: Appointment created!");
+                Console.Write("Emri i Klientit: ");
+                string emri = Console.ReadLine();
+
+                Console.Write("Shërbimi (p.sh. Prerje): ");
+                string sherbimi = Console.ReadLine();
+
+                Console.Write("Data (Format: vvvv-mm-dd): ");
+                string dataInput = Console.ReadLine();
+
+                if (!DateTime.TryParse(dataInput, out DateTime data))
+                {
+                    // Hedhim një përjashtim nëse formati i datës është i gabuar
+                    throw new FormatException("Formati i datës nuk është i saktë!");
+                }
+
+                // Krijojmë objektin e modelit
+                var rezervimiIRi = new Booking
+                {
+                    CustomerName = emri,
+                    ServiceName = sherbimi,
+                    AppointmentDate = data
+                };
+
+                // Thërrasim shërbimin për ruajtje
+                _appointmentService.CreateBooking(rezervimiIRi);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("SUKSES: Rezervimi u ruajt me sukses!");
+                Console.ResetColor();
+            }
+            catch (FormatException ex)
+            {
+                // Kapim gabimet e formatit (p.sh. shkronja në vend të numrave te data)
+                ShfaqMesazhinEGabimit($"Gabim Formati: {ex.Message}");
+            }
+            catch (ArgumentException ex)
+            {
+                // Kapim gabimet e validimit nga AppointmentService
+                ShfaqMesazhinEGabimit($"Gabim Validimi: {ex.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                // Kapim çdo gabim tjetër të papritur (p.sh. probleme me skedarin)
+                ShfaqMesazhinEGabimit($"Një gabim i papritur ndodhi: {ex.Message}");
             }
         }
 
-        private void SearchById()
+        private void ShfaqRezervimet()
         {
-            Console.Write("\nEnter Appointment ID: ");
-            if (int.TryParse(Console.ReadLine(), out int id))
+            var lista = _appointmentService.GetHistory();
+            Console.WriteLine("\n--- LISTA E REZERVIMEVE TË REGJISTRUARA ---");
+
+            if (lista == null || !lista.Any())
             {
-                try
-                {
-                    var app = _service.GetById(id);
-                    Console.WriteLine($"Found: {app.ClientName} - {app.Service} at {app.Time} on {app.Date}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                Console.WriteLine("Nuk ka asnjë rezervim në sistem.");
+                return;
+            }
+
+            foreach (Booking b in lista)
+            {
+                Console.WriteLine($"ID: {b.Id} | Klienti: {b.CustomerName} | Shërbimi: {b.ServiceName} | Data: {b.AppointmentDate.ToShortDateString()}");
             }
         }
 
-        private void UpdateExisting()
+        private void ShfaqMesazhinEGabimit(string mesazhi)
         {
-            Console.Write("\nEnter ID to update: ");
-            if (int.TryParse(Console.ReadLine(), out int id))
-            {
-                try
-                {
-                    var app = _service.GetById(id);
-                    Console.Write($"New Client Name ({app.ClientName}): "); string name = Console.ReadLine();
-                    Console.Write($"New Service ({app.Service}): "); string srv = Console.ReadLine();
-
-                    app.ClientName = string.IsNullOrWhiteSpace(name) ? app.ClientName : name;
-                    app.Service = string.IsNullOrWhiteSpace(srv) ? app.Service : srv;
-
-                    _service.UpdateAppointment(app);
-                    Console.WriteLine("Success: Appointment updated!");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-        }
-
-        private void Delete()
-        {
-            Console.Write("\nEnter ID to delete: ");
-            if (int.TryParse(Console.ReadLine(), out int id))
-            {
-                _service.RemoveAppointment(id);
-                Console.WriteLine("Success: Appointment deleted.");
-            }
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"\n[RELIABILITY ALERT]: {mesazhi}");
+            Console.ResetColor();
+            Console.WriteLine("Shtypni çfarëdo taste për të vazhduar...");
+            Console.ReadKey();
         }
     }
 }

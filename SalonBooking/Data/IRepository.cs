@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SalonBooking.Models;
+using System.Collections.Generic;
 
 namespace SalonBooking.Data
 {
@@ -8,5 +9,7 @@ namespace SalonBooking.Data
         T GetById(int id);
         void Add(T item);
         void Save();
+        
     }
+
 }
