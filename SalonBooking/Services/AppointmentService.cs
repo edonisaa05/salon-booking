@@ -8,76 +8,62 @@ namespace SalonBooking.Services
 {
     public class AppointmentService
     {
-        private readonly FileRepository _repository;
+        private readonly PostgreSqlRepository _repository;
 
-        // Dependency Injection: Service receives the Repository as a parameter
-        public AppointmentService(FileRepository repository)
+        public AppointmentService(PostgreSqlRepository repository)
         {
             _repository = repository;
         }
 
-        // Method 1: List with filtering (Requirement: 3 methods)
-        public List<Appointment> GetAppointments(string filter = "")
+        public void CreateBooking(Booking booking)
+        {
+            if (string.IsNullOrWhiteSpace(booking.CustomerName))
+                throw new Exception("Gabim Validimi: Emri i klientit nuk mund të jetë bosh!");
+
+            if (string.IsNullOrWhiteSpace(booking.ServiceName))
+                throw new Exception("Gabim Validimi: Shërbimi nuk mund të jetë bosh!");
+
+            _repository.Save(booking);
+        }
+
+        public List<Booking> GetHistory(string filter = "")
         {
             var all = _repository.GetAll();
-            if (string.IsNullOrEmpty(filter)) return all;
 
-            return all.Where(a => a.ClientName.ToLower().Contains(filter.ToLower())).ToList();
+            if (string.IsNullOrEmpty(filter))
+                return all;
+
+            return all
+                .Where(b => b.CustomerName.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
         }
 
-        // Method 2: Add with validation (Requirement: Name not empty)
-        public void CreateAppointment(Appointment appointment)
+        public Booking GetById(int id)
         {
-            if (string.IsNullOrWhiteSpace(appointment.ClientName))
-            {
-                throw new Exception("Validation Error: Client Name cannot be empty!");
-            }
-
-            // You can add additional logic here (e.g., date validation)
-            _repository.Add(appointment);
+            var booking = _repository.GetById(id);
+            if (booking == null)
+                throw new Exception($"Gabim: Rezervimi me ID {id} nuk u gjet!");
+            return booking;
         }
 
-        // Method 3: Find by ID
-        public Appointment GetById(int id)
+        public void UpdateBooking(Booking booking)
         {
-            var appointment = _repository.GetById(id);
-            if (appointment == null)
-            {
-                throw new Exception($"Error: Appointment with ID {id} not found!");
-            }
-            return appointment;
+            if (string.IsNullOrWhiteSpace(booking.CustomerName))
+                throw new Exception("Emri i klientit është i detyrueshëm për përditësim!");
+
+            _repository.Update(booking);
         }
 
-        // Update and Delete (For the bonus 10 points)
-        public void UpdateAppointment(Appointment updatedItem)
-        {
-            if (string.IsNullOrWhiteSpace(updatedItem.ClientName))
-                throw new Exception("Client Name is required for updates!");
-
-            _repository.Update(updatedItem);
-        }
-
-        public void RemoveAppointment(int id)
+        public void RemoveBooking(int id)
         {
             _repository.Delete(id);
         }
 
-        public List<Appointment> SearchByName(string name)
+        public List<Booking> SearchByName(string name)
         {
-            // Marrim të gjitha takimet nga repo dhe i filtrojmë sipas emrit
             return _repository.GetAll()
-                .Where(a => a.ClientName.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
+                .Where(b => b.CustomerName.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0)
                 .ToList();
-        }
-
-        internal void CreateBooking(Booking rezervimiIRi)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal IEnumerable<object> GetHistory()
-        {
-            throw new NotImplementedException();
         }
     }
 }

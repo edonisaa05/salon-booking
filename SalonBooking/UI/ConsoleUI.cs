@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using SalonBooking.Services;
 using SalonBooking.Models;
-using System.Linq;
+using SalonBooking.Services;
 
 namespace SalonBooking.UI
 {
     public class ConsoleUI
     {
-        private readonly AppointmentService _appointmentService;
+        private readonly AppointmentService _service;
 
-        public ConsoleUI(AppointmentService appointmentService)
+        public ConsoleUI(AppointmentService service)
         {
-            _appointmentService = appointmentService;
+            _service = service;
         }
 
         public void ShfaqMenu()
@@ -20,110 +19,160 @@ namespace SalonBooking.UI
             bool vazhdo = true;
             while (vazhdo)
             {
-                Console.WriteLine("\n--- SISTEMI I REZERVIMEVE ---");
+                Console.WriteLine("\n--- SISTEMI I REZERVIMEVE (PostgreSQL) ---");
                 Console.WriteLine("1. Shto Rezervim");
-                Console.WriteLine("2. Shfaq Historikun");
-                Console.WriteLine("3. Dil");
-                Console.Write("Zgjidhni një opsion: ");
+                Console.WriteLine("2. Shfaq te gjitha Rezervimet");
+                Console.WriteLine("3. Kerko sipas Emrit");
+                Console.WriteLine("4. Fshi Rezervim");
+                Console.WriteLine("5. Dil");
+                Console.Write("Zgjidhni nje opsion: ");
 
-                string zgjedhja = Console.ReadLine();
-
-                switch (zgjedhja)
+                switch (Console.ReadLine()?.Trim())
                 {
-                    case "1":
-                        ShtoRezervimInteraktiv();
-                        break;
-                    case "2":
-                        ShfaqRezervimet();
-                        break;
-                    case "3":
-                        vazhdo = false;
-                        break;
+                    case "1": ShtoRezervim(); break;
+                    case "2": ShfaqRezervimet(); break;
+                    case "3": KerkoSipasEmrit(); break;
+                    case "4": FshiRezervim(); break;
+                    case "5": vazhdo = false; break;
                     default:
-                        Console.WriteLine("Zgjedhje e gabuar! Provoni përsëri.");
+                        Console.WriteLine("Zgjedhje e gabuar! Provoni perseri.");
                         break;
                 }
             }
         }
 
-        private void ShtoRezervimInteraktiv()
+        private void ShtoRezervim()
         {
-            // FILLIMI I TRY-CATCH (Përmirësimi në Reliability)
             try
             {
-                Console.WriteLine("\n--- REGJISTRIMI I REZERVIMIT TË RI ---");
+                Console.WriteLine("\n--- REZERVIM I RI ---");
 
                 Console.Write("Emri i Klientit: ");
                 string emri = Console.ReadLine();
 
-                Console.Write("Shërbimi (p.sh. Prerje): ");
+                Console.Write("Sherbimi (p.sh. Prerje, Ngjyrosje): ");
                 string sherbimi = Console.ReadLine();
 
-                Console.Write("Data (Format: vvvv-mm-dd): ");
+                Console.Write("Data dhe Ora (Format: yyyy-MM-dd HH:mm): ");
                 string dataInput = Console.ReadLine();
 
                 if (!DateTime.TryParse(dataInput, out DateTime data))
-                {
-                    // Hedhim një përjashtim nëse formati i datës është i gabuar
-                    throw new FormatException("Formati i datës nuk është i saktë!");
-                }
+                    throw new FormatException("Formati i dates nuk eshte i sakte!");
 
-                // Krijojmë objektin e modelit
-                var rezervimiIRi = new Booking
+                var rezervimi = new Booking
                 {
                     CustomerName = emri,
                     ServiceName = sherbimi,
                     AppointmentDate = data
                 };
 
-                // Thërrasim shërbimin për ruajtje
-                _appointmentService.CreateBooking(rezervimiIRi);
+                _service.CreateBooking(rezervimi);
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("SUKSES: Rezervimi u ruajt me sukses!");
+                Console.WriteLine($"SUKSES: Rezervimi u ruajt ne PostgreSQL me ID = {rezervimi.Id}");
                 Console.ResetColor();
-            }
-            catch (FormatException ex)
-            {
-                // Kapim gabimet e formatit (p.sh. shkronja në vend të numrave te data)
-                ShfaqMesazhinEGabimit($"Gabim Formati: {ex.Message}");
-            }
-            catch (ArgumentException ex)
-            {
-                // Kapim gabimet e validimit nga AppointmentService
-                ShfaqMesazhinEGabimit($"Gabim Validimi: {ex.Message}");
             }
             catch (Exception ex)
             {
-                // Kapim çdo gabim tjetër të papritur (p.sh. probleme me skedarin)
-                ShfaqMesazhinEGabimit($"Një gabim i papritur ndodhi: {ex.Message}");
+                ShfaqGabim(ex.Message);
             }
         }
 
         private void ShfaqRezervimet()
         {
-            var lista = _appointmentService.GetHistory();
-            Console.WriteLine("\n--- LISTA E REZERVIMEVE TË REGJISTRUARA ---");
-
-            if (lista == null || !lista.Any())
+            try
             {
-                Console.WriteLine("Nuk ka asnjë rezervim në sistem.");
-                return;
+                var lista = _service.GetHistory();
+                Console.WriteLine("\n--- LISTA E REZERVIMEVE ---");
+
+                if (lista.Count == 0)
+                {
+                    Console.WriteLine("(Nuk ka asnje rezervim ne databaze.)");
+                    return;
+                }
+
+                PrintHeader();
+                foreach (var b in lista)
+                    PrintRow(b);
             }
-
-            foreach (Booking b in lista)
+            catch (Exception ex)
             {
-                Console.WriteLine($"ID: {b.Id} | Klienti: {b.CustomerName} | Shërbimi: {b.ServiceName} | Data: {b.AppointmentDate.ToShortDateString()}");
+                ShfaqGabim(ex.Message);
             }
         }
 
-        private void ShfaqMesazhinEGabimit(string mesazhi)
+        private void KerkoSipasEmrit()
+        {
+            try
+            {
+                Console.Write("\nJepni emrin per kerkim: ");
+                string emri = Console.ReadLine();
+
+                var rezultatet = _service.SearchByName(emri);
+                Console.WriteLine($"\n--- REZULTATET ({rezultatet.Count} gjetur) ---");
+
+                if (rezultatet.Count == 0)
+                {
+                    Console.WriteLine("Asnje rezervim nuk u gjet.");
+                    return;
+                }
+
+                PrintHeader();
+                foreach (var b in rezultatet)
+                    PrintRow(b);
+            }
+            catch (Exception ex)
+            {
+                ShfaqGabim(ex.Message);
+            }
+        }
+
+        private void FshiRezervim()
+        {
+            try
+            {
+                Console.Write("\nJepni ID-n e rezervimit per ta fshire: ");
+                if (!int.TryParse(Console.ReadLine(), out int id))
+                    throw new FormatException("ID duhet te jete numer!");
+
+                var b = _service.GetById(id);
+                Console.WriteLine($"Rezervimi: {b.CustomerName} | {b.ServiceName} | {b.AppointmentDate:yyyy-MM-dd HH:mm}");
+                Console.Write("Jeni te sigurt? (p/j): ");
+                if (Console.ReadLine()?.Trim().ToLower() != "p")
+                {
+                    Console.WriteLine("Anuluar.");
+                    return;
+                }
+
+                _service.RemoveBooking(id);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Rezervimi #{id} u fshi nga databaza.");
+                Console.ResetColor();
+            }
+            catch (Exception ex)
+            {
+                ShfaqGabim(ex.Message);
+            }
+        }
+
+        private void PrintHeader()
+        {
+            Console.WriteLine($"{"ID",-5} {"Klienti",-25} {"Sherbimi",-20} {"Data & Ora",-20}");
+            Console.WriteLine(new string('-', 72));
+        }
+
+        private void PrintRow(Booking b)
+        {
+            Console.WriteLine($"{b.Id,-5} {b.CustomerName,-25} {b.ServiceName,-20} {b.AppointmentDate:yyyy-MM-dd HH:mm}");
+        }
+
+        private void ShfaqGabim(string mesazhi)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"\n[RELIABILITY ALERT]: {mesazhi}");
+            Console.WriteLine($"\n[GABIM]: {mesazhi}");
             Console.ResetColor();
-            Console.WriteLine("Shtypni çfarëdo taste për të vazhduar...");
+            Console.WriteLine("Shtypni cfaredо taste per te vazhduar...");
             Console.ReadKey();
         }
     }
-}
+} 

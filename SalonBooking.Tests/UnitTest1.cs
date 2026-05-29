@@ -14,7 +14,7 @@ namespace SalonBooking.Tests
         public void SearchByName_ShouldReturnResults_WhenNameExists()
         {
             // Përgatitja (Arrange)
-            var repo = new FileRepository();
+            var repo = new PostgreSqlRepository();
             var service = new AppointmentService(repo);
             var testApp = new Appointment(999, "FilanFisteku", "Prerje", "01/01/2026", "10:00");
 
@@ -31,7 +31,7 @@ namespace SalonBooking.Tests
         [TestMethod]
         public void SearchByName_ShouldReturnEmpty_WhenNameDoesNotExist()
         {
-            var repo = new FileRepository();
+            var repo = new PostgreSqlRepository();
             var service = new AppointmentService(repo);
             var results = service.SearchByName("EmërQëNukEkziston123");
 

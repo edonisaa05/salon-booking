@@ -1,0 +1,134 @@
+﻿# Demo Plan — Sistemi i Menaxhimit të Termineve për Sallon Bukurie
+
+---
+
+## 1. Titulli i Projektit
+
+**Sistemi i Menaxhimit të Termineve — Sallon Bukurie**
+Teknologjitë: C# ASP.NET Core Web API · HTML / CSS / JavaScript · SQL Server / Entity Framework Core
+
+---
+
+## 2. Problemi që Zgjidh
+
+Sallonët e bukurisë zakonisht menaxhojnë termet me fletore fizike ose mesazhe WhatsApp — metoda që shkaktojnë konfuzioni, rezervime të dyfishta dhe humbje kohe për stafin.
+
+Ky projekt zgjidh:
+- **Rezervimet e dyfishta** — sistemi kontrollon disponueshmërinë para se të konfirmojë
+- **Mungesën e qartësisë** — stafi dhe klientët shohin termet e tyre në mënyrë të organizuar
+- **Punën manuale** — CRUD i plotë zëvendëson regjistrimin me dorë
+
+---
+
+## 3. Përdoruesit Kryesorë
+
+| Roli | Çfarë bën |
+|------|-----------|
+| **Klienti** | Rezervon termin, zgjedh shërbimin dhe orën |
+| **Stafi / Admin** | Shikon, menaxhon dhe përditëson të gjitha termet |
+| **Menaxheri** | Shton shërbime, menaxhon orarët |
+
+---
+
+## 4. Flow-i që do të Demonstrohet Live
+
+### Flow kryesor: Rezervim → Konfirmim → Status
+
+```
+[Formulari i Rezervimit]
+        ↓
+Klienti plotëson: emrin, datën, orën, shërbimin
+        ↓
+JavaScript → fetch(POST /api/appointments)
+        ↓
+C# Controller merr kërkesën
+        ↓
+Service Layer kontrollon disponueshmërinë
+        ↓
+Entity Framework → ruhet në database
+        ↓
+API kthen JSON me statusin
+        ↓
+JavaScript ndrysho DOM → "Termini u rezervua me sukses!"
+        ↓
+[Lista e termineve përditësohet live]
+```
+
+**Pse zgjodhëm pikërisht këtë flow?**
+Ky është zemra e aplikacionit — tregon të gjithë lidhjen frontend↔backend në mënyrë të plotë dhe të kuptueshme. Është edhe flow-i më i lehtë për t'u ndjekur nga audienca.
+
+---
+
+## 5. Një Problem Real që e Kemi Zgjidhur
+
+### Problemi: CORS Error mes Frontend dhe Backend
+
+**Çka ishte problemi?**
+Kur JavaScript dërgonte kërkesë me `fetch()` nga `localhost` (frontend) drejt `localhost:5001` (C# API), browseri e bllokonte automatikisht me gabim:
+```
+Access to fetch at 'https://localhost:5001/api/appointments'
+from origin 'http://localhost:3000' has been blocked by CORS policy.
+```
+
+**Ku ishte problemi?**
+Browseri, si masë sigurie, ndalon kërkesat HTTP midis porteve/domain-eve të ndryshme — quhet *Same-Origin Policy*. C# API-ja nuk kishte dhënë leje shprehimisht.
+
+**Si e zgjidhëm?**
+Shtuam konfigurimin e CORS-it në `Program.cs`:
+
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+app.UseCors("AllowFrontend");
+```
+
+**Çfarë mësuam?**
+Në prodhim (production), `WithOrigins` duhet të specifikojë domainein real — jo `*` (wildcard) — për arsye sigurie.
+
+---
+
+## 6. Çka Mbetet Ende e Dobët
+
+**Autentifikimi / Login nuk është i plotë**
+
+Aktualisht, çdo person që hap aplikacionin mund të shohë dhe ndryshojë të gjitha termet pa u identifikuar. Mungon:
+- Sistemi i login/logout me JWT Token
+- Ndarja e roleve: klient vs admin
+- Mbrojtja e endpoint-eve me `[Authorize]`
+
+Kjo është prioriteti i ardhshëm i zhvillimit.
+
+---
+
+## 7. Struktura e Prezantimit (5–7 minuta)
+
+### ⏱ Hyrja — 1 minutë
+- Prezanto projektin me një fjali: *"Ky sistem zëvendëson fletoren e sallonit me një aplikacion web të plotë."*
+- Trego problemin real që zgjidh (rezervime të dyfishta, konfuzion me orare)
+- Thuaj teknologjitë: C# backend, HTML/JS frontend, SQL Server
+
+### ⏱ Demo Live — 2–3 minuta
+Trego hap pas hapi:
+1. Hap faqen frontend në browser
+2. Plotëso formularin e rezervimit (emri, data, shërbimi)
+3. Kliko "Rezervo" — trego network tab në DevTools (kërkesa POST dhe JSON response)
+4. Shfaq listën e termineve të përditësuar
+5. Trego CRUD: ndrysho ose fshij një termin
+
+### ⏱ Shpjegimi Teknik — 1 minutë
+- Trego shpejt strukturën: `Controllers/` → `Services/` → `Models/`
+- Shpjego lidhjen: JS `fetch()` → HTTP → C# Controller → EF Core → SQL
+- Trego një endpoint të thjeshtë në kod
+
+### ⏱ Problemi + Zgjidhja — 1 minutë
+- Shpjego CORS error-in dhe si e zgjidhte
+- Trego rreshtat konkrete të kodit në `Program.cs`
+- *"Ky gabim na mësoi si funksionon siguria e browser-it"*

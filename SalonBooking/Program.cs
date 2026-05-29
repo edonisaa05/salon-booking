@@ -9,19 +9,30 @@ namespace SalonBooking
     {
         static void Main(string[] args)
         {
-            // 1. Krijojmë instancën e Repository-t (Shtresa e të dhënave)
-            // Kjo shtresë merret me leximin/shkrimin në skedarin CSV
-            FileRepository repo = new FileRepository();
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.WriteLine("=== Salon Booking — PostgreSQL ===\n");
 
-            // 2. Krijojmë Shërbimin dhe "injektojmë" repository-n
-            // Kjo quhet Dependency Injection (DI) - Përmirësimi 1
-            AppointmentService service = new AppointmentService(repo);
+            var repo = new PostgreSqlRepository();
 
-            // 3. Krijojmë UI dhe "injektojmë" shërbimin
-            // UI do të përdorë try-catch për Reliability - Përmirësimi 2
-            ConsoleUI ui = new ConsoleUI(service);
+            try
+            {
+                repo.InitializeDatabase();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"[GABIM LIDHJEJE] Nuk u lidh me PostgreSQL:\n{ex.Message}");
+                Console.WriteLine("\nKontroloni:");
+                Console.WriteLine("  • PostgreSQL është duke u ekzekutuar?");
+                Console.WriteLine("  • Kredencialet në PostgreSqlRepository.cs janë të sakta?");
+                Console.ResetColor();
+                Console.WriteLine("\nShtypni çfarëdo taste për të dalë...");
+                Console.ReadKey();
+                return;
+            }
 
-            // 4. Nisim ekzekutimin e menusë kryesore
+            var service = new AppointmentService(repo);
+            var ui = new ConsoleUI(service);
             ui.ShfaqMenu();
         }
     }

@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "aWv7JFRoq3rBvO5VB99aKg6u79ak8xWy5sZ9GSPG5Js=",
+  "Source": "SalonAPI",
+  "BasePath": "_content/SalonAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
